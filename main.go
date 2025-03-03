@@ -21,6 +21,7 @@ func (s *Server) Start() error{
 	if err != nil {
 		log.Fatal("Could not Start the server")
 	}
+	ln.Close()
 }
 
 func main(){
