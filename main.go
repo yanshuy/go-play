@@ -1,29 +1,53 @@
 package main
 
 import (
-	"log"
-	"net"
+	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
-type Server struct{
-	listenAddr string
-	ln net.Listener
+type Article struct {
+	Author  string
+	Content string
 }
 
-func NewServer(addr string) *Server{
-	return &Server{
-		listenAddr: addr,
-	}
+var articles = []Article{
+	{
+		Author:  "John Doe",
+		Content: "This is a sample article about technology.",
+	},
+	{
+		Author:  "Jane Smith",
+		Content: "This article discusses recent advancements in AI.",
+	},
+	{
+		Author:  "Bob Johnson",
+		Content: "A brief overview of sustainable energy solutions.",
+	},
 }
 
-func (s *Server) Start() error{
-	ln, err := net.Dial("tcp", s.listenAddr)
+func getArticle(w http.ResponseWriter, r *http.Request) {
+	urlId := chi.URLParam(r, "articleId")
+	articleId, err := strconv.Atoi(urlId)
+
 	if err != nil {
-		log.Fatal("Could not Start the server")
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	ln.Close()
+
+	w.Write([]byte(articles[articleId].Content))
 }
 
-func main(){
-
+func main() {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello World!"))
+	})
+	r.Route("/{articleID}", func(r chi.Router) {
+		r.Get("/", getArticle)
+	})
+	http.ListenAndServe(":3000", r)
 }
