@@ -8,5 +8,4 @@ func main() {
 	go server.handleCmds()
 
 	log.Fatal(server.Start())
-
 }
